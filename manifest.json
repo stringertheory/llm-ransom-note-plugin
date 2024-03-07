@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Make It Ransomy",
+  "description": "This will make ChatGPT's responses look like ransom notes. It's inspired by Allison Parrish's insightful-as-always post 'Language models can only write ransom notes' https://posts.decontextualize.com/language-models-ransom-notes/",
+  "version": "1.0",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chat.openai.com/*"],
+      "run_at": "document_idle",
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": ["scripting", "activeTab"],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+B",
+        "mac": "Command+B"
+      }
+    }
+  }
+}

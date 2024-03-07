@@ -1,0 +1,122 @@
+div[data-message-author-role="assistant"] {
+    overflow: visible;
+}
+
+span.ransomy-container {
+    position: relative;
+    z-index: 1;
+}
+span.ransomy {
+    position: relative;
+    padding-left: 0.25em;
+    &.b0 {
+	&.r0 {
+	    &::before {
+		content: "";
+		position: absolute;
+		width: 125%;
+		height: 125%;
+		top: -10%;
+		left: 0%;
+		z-index: -1;
+		background-color: rgba(255,255,0,0.8);
+		transform: rotate(-10deg);
+	    }
+	}
+	&.r1 {
+	    &::before {
+		content: "";
+		position: absolute;
+		width: 125%;
+		height: 125%;
+		top: -10%;
+		left: 0%;
+		z-index: -1;
+		background-color: rgba(255,255,0,0.8);
+		transform: rotate(10deg);
+	    }
+	}
+    }
+    &.b1 {
+	&.r0 {
+	    &::before {
+		content: "";
+		position: absolute;
+		width: 125%;
+		height: 125%;
+		top: -10%;
+		left: 0%;
+		z-index: -1;
+		background-color: rgba(0,255,255,0.8);
+		transform: rotate(-10deg);
+	    }
+	}
+	&.r1 {
+	    &::before {
+		content: "";
+		position: absolute;
+		width: 125%;
+		height: 125%;
+		top: -10%;
+		left: 0%;
+		z-index: -1;
+		background-color: rgba(0,255,255,0.8);
+		transform: rotate(10deg);
+	    }
+	}
+	
+    }
+    &.b2 {
+	background-color: rgba(255,0,255,0.8);
+    }
+    &.f0 {
+	font-family: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;    
+    }
+    &.f1 {
+	font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+    }
+    &.f2 {
+	font-family: 'Nimbus Mono PS', 'Courier New', monospace;
+    }
+    &.f3 {
+	font-family: 'Iowan Old Style', 'Palatino Linotype', 'URW Palladio L', P052, serif;
+    }
+    &.f4 {
+	font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+    }
+    &.f5 {
+	font-family: Rockwell, 'Rockwell Nova', 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif;
+    }
+    &.w0 {
+	font-weight: 400;
+    }
+    &.w1 {
+	font-weight: 700;
+    }
+    &.s0 {
+	font-size: normal;
+    }
+    &.s1 {
+	font-size: larger;
+    }
+    &.x0 {
+	left: -0.02em;
+    }
+    &.x1 {
+	left: 0em;
+    }
+    &.x2 {
+	left: 0.02em;
+    }
+    &.y0 {
+	top: -0.02em;
+    }
+    &.y1 {
+	top: 0em;
+    }
+    &.y2 {
+	top: 0.02em;
+    }
+    
+    
+}
