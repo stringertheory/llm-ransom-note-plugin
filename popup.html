@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Make It Ransomy</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      width: 18rem;
+      margin: 0;
+      padding: 0.85rem 1rem 1rem;
+      color: #1a1a1a;
+      line-height: 1.4;
+    }
+    h1 {
+      font-size: 1rem;
+      margin: 0 0 0.6rem;
+      font-weight: 700;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.4rem 0;
+      margin-bottom: 0.4rem;
+      border-bottom: 1px solid #eee;
+    }
+    .toggle-row input { width: 1.05rem; height: 1.05rem; margin: 0; }
+    .toggle-row label { font-weight: 600; cursor: pointer; }
+    .section-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #777;
+      margin: 0.5rem 0 0.3rem;
+    }
+    label.mode {
+      display: block;
+      padding: 0.35rem 0;
+      cursor: pointer;
+    }
+    label.mode input { margin-right: 0.5rem; vertical-align: middle; }
+    .mode-name { font-weight: 600; font-size: 0.92rem; }
+    .mode-desc { color: #555; font-size: 0.78rem; margin-left: 1.45rem; margin-top: 0.1rem; }
+    .footer { color: #888; font-size: 0.72rem; margin-top: 0.6rem; }
+    kbd {
+      font-family: ui-monospace, Menlo, monospace;
+      background: #f3f3f3;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 0 0.2rem;
+      font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Make It Ransomy</h1>
+
+  <div class="toggle-row">
+    <input type="checkbox" id="on">
+    <label for="on">On</label>
+  </div>
+
+  <div class="section-label">Style</div>
+
+  <label class="mode">
+    <input type="radio" name="mode" value="per-letter">
+    <span class="mode-name">Per letter</span>
+    <div class="mode-desc">Each cutout is 1–3 letters.</div>
+  </label>
+
+  <label class="mode">
+    <input type="radio" name="mode" value="per-token">
+    <span class="mode-name">Per token</span>
+    <div class="mode-desc">Each cutout is one token.</div>
+  </label>
+
+  <label class="mode">
+    <input type="radio" name="mode" value="token-coherent">
+    <span class="mode-name">Token colored</span>
+    <div class="mode-desc">Per-letter cutouts; one paper color per token.</div>
+  </label>
+
+  <div class="footer">Shortcut: <kbd>Cmd</kbd>+<kbd>B</kbd></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

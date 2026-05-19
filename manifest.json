@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Make It Ransomy",
-  "description": "Re-renders ChatGPT assistant messages as ransom-note paper cutouts, one scrap per OpenAI token. Inspired by Allison Parrish's 'Language models can only write ransom notes' (https://posts.decontextualize.com/language-models-ransom-notes/).",
+  "description": "Turns ChatGPT messages ransom-note style. Inspired by Allison Parrish's 'Language models can only write ransom notes.'",
   "version": "2.0",
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_icon": "icon.png"
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
   },
   "content_scripts": [
     {
@@ -16,7 +17,7 @@
       "js": ["content.js"]
     }
   ],
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage"],
   "commands": {
     "_execute_action": {
       "suggested_key": {

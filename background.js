@@ -1,16 +1,15 @@
-let on = false;
+const DEFAULT_MODE = 'token-coherent';
 
-chrome.runtime.onInstalled.addListener(() => {
-  on = false;
-  chrome.action.setIcon({ path: 'icon-off.png' });
+function setIcon(on) {
+  chrome.action.setIcon({ path: on ? 'icon.png' : 'icon-off.png' });
+}
+
+chrome.runtime.onInstalled.addListener(async () => {
+  const cur = await chrome.storage.local.get({ on: false, mode: DEFAULT_MODE });
+  await chrome.storage.local.set(cur);
+  setIcon(cur.on);
 });
 
-chrome.action.onClicked.addListener(async (tab) => {
-  on = !on;
-  await chrome.action.setIcon({ path: on ? 'icon.png' : 'icon-off.png' });
-  try {
-    await chrome.tabs.sendMessage(tab.id, { ransomy: on });
-  } catch {
-    // No content script in this tab (host doesn't match).
-  }
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.on) setIcon(!!changes.on.newValue);
 });

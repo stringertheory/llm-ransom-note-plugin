@@ -2,12 +2,16 @@ const { encode, decode } = require('gpt-tokenizer/encoding/o200k_base');
 const { renderTokenHtml } = require('./render');
 
 const ASSISTANT_SEL = 'div[data-message-author-role="assistant"]';
+const DEFAULT_MODE = 'token-coherent';
 
 // Cache of pre-wrap innerHTML per message so toggle-off restores it
 // without losing markdown structure.
 const originalHtml = new WeakMap();
 
-function wrap(root) {
+let on = false;
+let currentMode = DEFAULT_MODE;
+
+function wrap(root, mode) {
   if (originalHtml.has(root)) return;
   originalHtml.set(root, root.innerHTML);
 
@@ -28,7 +32,7 @@ function wrap(root) {
   while ((n = walker.nextNode())) nodes.push(n);
 
   nodes.forEach((node, i) => {
-    const html = renderTokenHtml(node.nodeValue, encode, decode, baseSeed + i * 1009);
+    const html = renderTokenHtml(node.nodeValue, encode, decode, baseSeed + i * 1009, { mode });
     const tmpl = document.createElement('template');
     tmpl.innerHTML = html;
     if (node.parentNode) node.parentNode.replaceChild(tmpl.content, node);
@@ -47,11 +51,35 @@ function unwrap(root) {
   originalHtml.delete(root);
 }
 
-function applyAll(on) {
-  const fn = on ? wrap : unwrap;
-  document.querySelectorAll(ASSISTANT_SEL).forEach(fn);
+function applyState() {
+  document.querySelectorAll(ASSISTANT_SEL).forEach((root) => {
+    if (on) wrap(root, currentMode);
+    else unwrap(root);
+  });
 }
 
-chrome.runtime.onMessage.addListener((req) => {
-  if (req && typeof req.ransomy === 'boolean') applyAll(req.ransomy);
+function rerenderForModeChange() {
+  if (!on) return;
+  document.querySelectorAll(ASSISTANT_SEL).forEach((root) => {
+    unwrap(root);
+    wrap(root, currentMode);
+  });
+}
+
+chrome.storage.local.get({ on: false, mode: DEFAULT_MODE }, (state) => {
+  on = !!state.on;
+  currentMode = state.mode || DEFAULT_MODE;
+  if (on) applyState();
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return;
+  if (changes.on) {
+    on = !!changes.on.newValue;
+    applyState();
+  }
+  if (changes.mode && typeof changes.mode.newValue === 'string') {
+    currentMode = changes.mode.newValue;
+    rerenderForModeChange();
+  }
 });
