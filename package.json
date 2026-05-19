@@ -9,7 +9,8 @@
     "dev:chrome": "bash dev/launch-chrome.sh",
     "dev:inspect": "node dev/inspect.js",
     "dev:targets": "node dev/list-targets.js",
-    "dev:proto": "node dev/proto.js"
+    "dev:proto": "node dev/proto.js",
+    "package": "bash dev/package.sh"
   },
   "devDependencies": {
     "esbuild": "^0.27.3",
