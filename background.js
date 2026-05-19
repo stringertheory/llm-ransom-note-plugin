@@ -1,23 +1,16 @@
-let on;
+let on = false;
 
 chrome.runtime.onInstalled.addListener(() => {
   on = false;
-  chrome.action.setIcon({path: "icon-off.png"});
+  chrome.action.setIcon({ path: 'icon-off.png' });
 });
 
 chrome.action.onClicked.addListener(async (tab) => {
-
-  // toggle
-  on = on ? false : true;
-
-  const method = on ? 'insertCSS' : 'removeCSS'
-  const iconPath = on ? 'icon.png' : 'icon-off.png'
-  
-  await chrome.scripting[method]({
-    files: ['style.css'],
-    target: { tabId: tab.id }
-  });
-  await chrome.action.setIcon({path: iconPath});
-  await chrome.tabs.sendMessage(tab.id, {font: "Comic Sans MS"});
-  
+  on = !on;
+  await chrome.action.setIcon({ path: on ? 'icon.png' : 'icon-off.png' });
+  try {
+    await chrome.tabs.sendMessage(tab.id, { ransomy: on });
+  } catch {
+    // No content script in this tab (host doesn't match).
+  }
 });

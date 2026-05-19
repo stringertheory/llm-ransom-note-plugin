@@ -1,0 +1,21 @@
+{
+  "name": "make-it-ransomy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension that re-renders ChatGPT assistant messages as ransom-note paper cutouts, one scrap per OpenAI token.",
+  "scripts": {
+    "build": "esbuild src/content.js --bundle --outfile=content.js --format=iife --target=chrome120 --minify",
+    "watch": "esbuild src/content.js --bundle --outfile=content.js --format=iife --target=chrome120 --watch",
+    "dev:chrome": "bash dev/launch-chrome.sh",
+    "dev:inspect": "node dev/inspect.js",
+    "dev:targets": "node dev/list-targets.js",
+    "dev:proto": "node dev/proto.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.3",
+    "playwright": "^1.60.0"
+  },
+  "dependencies": {
+    "gpt-tokenizer": "^3.0.0"
+  }
+}
