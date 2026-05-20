@@ -17,7 +17,7 @@
       "js": ["content.js"]
     }
   ],
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["storage"],
   "commands": {
     "_execute_action": {
       "suggested_key": {

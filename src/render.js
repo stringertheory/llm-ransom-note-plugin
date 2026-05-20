@@ -97,6 +97,16 @@
     { f: "'Times New Roman', serif",                                          w: 400 },
   ];
 
+  // Extra gap at word boundaries so words read as separate, tuned per mode.
+  // Applied as margin-right on the last scrap before a boundary: margin on our
+  // own elements (word-spacing on the container is overridden by ChatGPT's prose
+  // CSS), on the right edge so a word that wraps to a new line isn't indented.
+  const WORD_GAP = {
+    'per-letter': '0.7em',
+    'per-token': '0.1em',
+    'token-coherent': '0.6em',
+  };
+
   // ── PRNG (mulberry32) ─────────────────────────────────────────────────
   function makeRand(seed) {
     let a = (seed >>> 0) || 1;
@@ -201,7 +211,7 @@
   // `scrap` is either picked here (when `forcedScrap` is null) or passed in
   // (token-coherent mode reuses the same scrap across a token's letters).
   function styleForScrap(opts) {
-    const { isPunct, isGiantEligible, r, forcedScrap, jitter } = opts;
+    const { isPunct, isGiantEligible, r, forcedScrap, jitter, marginRight } = opts;
     const scrap = forcedScrap || pickWeighted(SCRAPS, r);
     const ink = scrap.inks[Math.floor(r() * scrap.inks.length)];
     const font = FONTS[Math.floor(r() * FONTS.length)];
@@ -242,6 +252,7 @@
         'background:' + bg,
         'padding:' + py + 'em ' + px + 'em',
         'margin:0 0.03em',
+        marginRight ? 'margin-right:' + marginRight : '',
         'transform:rotate(' + rot + 'deg) translateY(' + dy + 'em)',
         'filter:drop-shadow(0 1px 1.5px rgba(0,0,0,0.30))',
         border,
@@ -276,23 +287,30 @@
   // ── Public API ────────────────────────────────────────────────────────
   function renderTokenHtml(text, encode, decode, seed, options) {
     const mode = (options && options.mode) || 'token-coherent';
+    const gap = WORD_GAP[mode] || WORD_GAP['token-coherent'];
     const r = makeRand(seed);
     const ids = encode(text);
+    const decoded = ids.map((id) => decode([id]));
     let html = '';
 
-    for (const id of ids) {
-      const s = decode([id]);
+    for (let i = 0; i < decoded.length; i++) {
+      const s = decoded[i];
       const m = s.match(/^(\s*)(.*)$/s);
       const lead = m[1];
       const body = m[2];
       if (!body) { html += lead; continue; }
       html += lead;
 
+      // The word gap rides on the trailing edge of the last scrap before a
+      // boundary — i.e. when the next visible token starts with whitespace.
+      const next = decoded[i + 1];
+      const marginRight = (next != null && /^\s/.test(next) && next.trim() !== '') ? gap : null;
+
       const isPunct = /^[^A-Za-z0-9']+$/.test(body);
 
       if (isPunct) {
         // Punctuation is always a single scrap, regardless of mode.
-        html += spanFor(body, { isPunct: true, r });
+        html += spanFor(body, { isPunct: true, r, marginRight });
         continue;
       }
 
@@ -300,7 +318,7 @@
         // Whole token = one scrap. Picks ONE case style, one font, one paper.
         const caseStyle = pickCaseStyle(r);
         const styled = applyCase(body, caseStyle);
-        html += spanFor(styled, { isPunct: false, isGiantEligible: true, r });
+        html += spanFor(styled, { isPunct: false, isGiantEligible: true, r, marginRight });
         continue;
       }
 
@@ -335,7 +353,8 @@
         }
       }
 
-      html += '<span class="ransomy-word" style="white-space:nowrap;display:inline-block">' + inner + '</span>';
+      const wordGap = marginRight ? ';margin-right:' + marginRight : '';
+      html += '<span class="ransomy-word" style="white-space:nowrap;display:inline-block' + wordGap + '">' + inner + '</span>';
     }
     return html;
   }

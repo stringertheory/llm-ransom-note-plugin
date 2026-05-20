@@ -4,12 +4,19 @@ const { renderTokenHtml } = require('./render');
 const ASSISTANT_SEL = 'div[data-message-author-role="assistant"]';
 const DEFAULT_MODE = 'token-coherent';
 
+// A message is styled only after it has stopped mutating for this long, so we
+// don't wrap half-streamed text or fight ChatGPT's React re-renders mid-stream.
+const STREAM_SETTLE_MS = 600;
+
 // Cache of pre-wrap innerHTML per message so toggle-off restores it
 // without losing markdown structure.
 const originalHtml = new WeakMap();
+// Pending debounce timer per message while it's still streaming.
+const wrapTimers = new WeakMap();
 
 let on = false;
 let currentMode = DEFAULT_MODE;
+let observer = null;
 
 function wrap(root, mode) {
   if (originalHtml.has(root)) return;
@@ -66,10 +73,66 @@ function rerenderForModeChange() {
   });
 }
 
+// True if `root` holds visible text that isn't already inside a scrap.
+// Mirrors wrap()'s filter: ignores whitespace-only nodes (the inter-scrap
+// glue) and .text-xs metadata.
+function hasUnstyledText(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      if (!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      if (n.parentElement && n.parentElement.closest('.text-xs')) return NodeFilter.FILTER_REJECT;
+      if (n.parentElement && n.parentElement.closest('.ransomy-tok')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  return walker.nextNode() != null;
+}
+
+// Style `root` once it's been quiet for STREAM_SETTLE_MS. Idempotent: a
+// fully-styled message is a no-op (so our own edits don't retrigger it), and
+// a message ChatGPT changed after we styled it — e.g. it resumed streaming
+// after a pause and React replaced our spans — gets its stale snapshot
+// dropped and is restyled once the now-complete text settles.
+function scheduleWrap(root) {
+  clearTimeout(wrapTimers.get(root));
+  wrapTimers.set(root, setTimeout(() => {
+    wrapTimers.delete(root);
+    if (!on || !hasUnstyledText(root)) return;
+    originalHtml.delete(root);
+    wrap(root, currentMode);
+  }, STREAM_SETTLE_MS));
+}
+
+function assistantRootFor(node) {
+  const el = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+  return el && el.closest ? el.closest(ASSISTANT_SEL) : null;
+}
+
+function startObserver() {
+  if (observer) return;
+  observer = new MutationObserver((mutations) => {
+    if (!on) return;
+    for (const m of mutations) {
+      const root = assistantRootFor(m.target);
+      if (root) { scheduleWrap(root); continue; }
+      for (const added of m.addedNodes) {
+        if (added.nodeType !== Node.ELEMENT_NODE) continue;
+        if (added.matches && added.matches(ASSISTANT_SEL)) scheduleWrap(added);
+        else if (added.querySelectorAll) added.querySelectorAll(ASSISTANT_SEL).forEach(scheduleWrap);
+      }
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+}
+
+function stopObserver() {
+  if (observer) { observer.disconnect(); observer = null; }
+}
+
 chrome.storage.local.get({ on: false, mode: DEFAULT_MODE }, (state) => {
   on = !!state.on;
   currentMode = state.mode || DEFAULT_MODE;
-  if (on) applyState();
+  if (on) { applyState(); startObserver(); }
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -77,6 +140,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (changes.on) {
     on = !!changes.on.newValue;
     applyState();
+    if (on) startObserver(); else stopObserver();
   }
   if (changes.mode && typeof changes.mode.newValue === 'string') {
     currentMode = changes.mode.newValue;
